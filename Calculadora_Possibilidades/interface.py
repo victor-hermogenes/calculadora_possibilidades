@@ -1,22 +1,24 @@
 import os
-import shutil
+import fitz  # Importe a biblioteca PyMuPDF (Fitz)
 import PySimpleGUI as sg
 
 def main():
-    # Definição do caminho da imagem
-    image_source_path = os.path.join('C:\\Users\\Micro\\Downloads', 'LOGO_MAHALO_H.png')
+    # Definição do caminho do arquivo PDF
+    pdf_file = "LOGO_MAHALO_H.pdf"
 
-    # Crie um diretório temporário para a imagem sem espaços no nome
-    temp_directory = os.path.join(os.getcwd(), 'temp_images')
-    os.makedirs(temp_directory, exist_ok=True)
-    image_temp_path = os.path.join(temp_directory, 'logo.png')
+    # Carregue o arquivo PDF
+    pdf_document = fitz.open(pdf_file)
 
-    # Copie a imagem para o diretório temporário
-    shutil.copy(image_source_path, image_temp_path)
+    # Obtenha a primeira página do PDF
+    pdf_page = pdf_document[0]
+
+    # Renderize a primeira página como imagem
+    pixmap = pdf_page.get_pixmap()
+    image_bytes = pixmap.get_png_data()
 
     # Definição do layout da interface
     layout = [
-        [sg.Image(filename=image_temp_path)],
+        [sg.Image(data=image_bytes)],
         [sg.Text('Valor Principal:'), sg.Input(key='-VALOR_PRINCIPAL-')],
         [sg.Text('Valor Multiplicado:'), sg.Input(key='-VALOR_MULTIPLICADO-')],
         [sg.Text('Valor Dividido:'), sg.Input(key='-VALOR_DIVIDIDO-')],
@@ -51,10 +53,11 @@ def main():
             except ValueError:
                 sg.popup("Por favor, insira apenas números válidos.")
 
-    # Exclua o diretório temporário e seu conteúdo após fechar a janela
-    shutil.rmtree(temp_directory)
+    # Feche o arquivo PDF
+    pdf_document.close()
 
     window.close()
 
 if __name__ == "__main__":
     main()
+
